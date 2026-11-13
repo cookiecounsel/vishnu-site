@@ -30,6 +30,12 @@ content:
         label: Summary
         type: text
         description: One or two sentences shown on the Law page and the home page.
+      - name: description
+        label: Search description (optional, up to about 155 characters)
+        type: text
+      - name: updated
+        label: Last updated (optional)
+        type: date
       - name: draft
         label: Draft (hidden from the website)
         type: boolean
