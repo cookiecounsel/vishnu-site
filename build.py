@@ -277,7 +277,7 @@ def nav_links(current, cls):
     return f'<nav class="{cls}" aria-label="Main">' + "".join(parts) + "</nav>"
 
 
-def layout(title, desc, body, path, current=None, kind="website", noindex=False):
+def layout(title, desc, body, path, current=None, kind="website", noindex=False, jsonld=None, published=None):
     name = SITE["name"]
     full_title = name if not title else f"{title} | {name}"
     head = [
@@ -289,6 +289,7 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False)
         f'<meta property="og:description" content="{esc(desc)}">',
         f'<meta property="og:type" content="{kind}">',
         f'<meta property="og:site_name" content="{esc(name)}">',
+        '<meta name="twitter:card" content="summary">',
         f'<link rel="stylesheet" href="{href("/style.css")}">',
     ]
     if noindex:
@@ -297,6 +298,11 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False)
         head.append(f'<link rel="canonical" href="{abs_url(path)}">')
         head.append(f'<meta property="og:url" content="{abs_url(path)}">')
         head.append(f'<link rel="alternate" type="application/atom+xml" title="{esc(name)}" href="{abs_url("/feed.xml")}">')
+    if published:
+        head.append(f'<meta property="article:published_time" content="{published.isoformat()}">')
+    if jsonld and URL:
+        blob = json.dumps(jsonld, ensure_ascii=False).replace("</", "<\\/")
+        head.append(f'<script type="application/ld+json">{blob}</script>')
     header = (
         '<header class="wrap masthead">'
         f'<a class="brand" href="{href("/")}">{esc(name)}</a>'
@@ -317,6 +323,14 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False)
         + '\n</head>\n<body>\n<a class="skip" href="#main">Skip to content</a>\n'
         + header + "\n" + body + "\n" + footer + "\n</body>\n</html>\n"
     )
+
+
+def person_ld():
+    p = {"@type": "Person", "name": SITE["name"], "url": abs_url("/about/"),
+         "jobTitle": "Advocate", "knowsAbout": ["Privacy law", "Data protection", "Consent"]}
+    if SITE.get("linkedin"):
+        p["sameAs"] = [SITE["linkedin"]]
+    return p
 
 
 def entry_html(a):
@@ -347,7 +361,10 @@ def page_home(articles):
         f'<a class="more" href="{href("/law/")}">All articles</a></div>'
         '<div class="entries">' + "".join(entry_html(a) for a in articles[:limit]) + "</div></section></main>"
     )
-    return layout("", SITE["description"], body, "/", current="/")
+    return layout("", SITE["description"], body, "/", current="/",
+                  jsonld={"@context": "https://schema.org", "@type": "WebSite", "name": SITE["name"],
+                          "url": abs_url("/"), "description": SITE["description"],
+                          "inLanguage": SITE.get("lang", "en"), "author": person_ld()})
 
 
 def page_law(articles):
@@ -377,7 +394,7 @@ def page_article(a, articles):
     if a["topic"]:
         eyebrow += f" · {esc(a['topic'])}"
     if a["date"]:
-        eyebrow += f' <span>· {esc(fmt_date(a["date"]))}</span>'
+        eyebrow += f' <span>· <time datetime="{a["date"].isoformat()}">{esc(fmt_date(a["date"]))}</time></span>'
     lede = f'<p class="lede">{esc(a["summary"])}</p>' if a["summary"] else ""
     body = (
         '<main id="main"><article class="article">'
@@ -389,8 +406,19 @@ def page_article(a, articles):
         "and any regulator guidance for your situation.</p>"
         f"{nxt}</article></main>"
     )
+    ld = {
+        "@context": "https://schema.org", "@type": "Article",
+        "headline": a["title"], "description": a["summary"] or SITE["description"],
+        "inLanguage": SITE.get("lang", "en"), "author": person_ld(),
+        "mainEntityOfPage": abs_url(f"/law/{a['slug']}/"),
+    }
+    if a["topic"]:
+        ld["articleSection"] = a["topic"]
+    if a["date"]:
+        ld["datePublished"] = ld["dateModified"] = a["date"].isoformat()
     return layout(a["title"], a["summary"] or SITE["description"], body,
-                  f"/law/{a['slug']}/", current="/law/", kind="article")
+                  f"/law/{a['slug']}/", current="/law/", kind="article",
+                  jsonld=ld, published=a["date"])
 
 
 def page_about():
@@ -413,7 +441,8 @@ def page_about():
         "Writing to me does not create an advocate-client relationship, so please do not send "
         "confidential information in a first email.</p></section></main>"
     )
-    return layout("About", "About " + SITE["name"] + ", advocate in Kozhikode, Kerala.", body, "/about/", current="/about/")
+    return layout("About", "About " + SITE["name"] + ", advocate in Kozhikode, Kerala.", body, "/about/", current="/about/",
+                  jsonld={"@context": "https://schema.org", "@type": "ProfilePage", "mainEntity": person_ld()})
 
 
 def page_404():
