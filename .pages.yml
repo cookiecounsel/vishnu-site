@@ -1,0 +1,46 @@
+media:
+  input: static/media
+  output: /media
+content:
+  - name: articles
+    label: Articles
+    type: collection
+    path: content/articles
+    filename: "{primary}.md"
+    view:
+      fields: [title, topic, date, draft]
+      primary: title
+      sort: [date]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+      - name: topic
+        label: Topic
+        type: string
+        description: A short label such as Consent or Contracts.
+      - name: summary
+        label: Summary
+        type: text
+        description: One or two sentences shown on the Law page and the home page.
+      - name: draft
+        label: Draft (hidden from the website)
+        type: boolean
+        default: false
+      - name: body
+        label: Article
+        type: rich-text
+  - name: about
+    label: About page
+    type: file
+    path: content/about.md
+    fields:
+      - { name: title, label: Title, type: string }
+      - { name: body, label: Text, type: rich-text }
