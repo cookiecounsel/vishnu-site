@@ -246,6 +246,16 @@ def load_articles():
             except ValueError:
                 raise SystemExit(f"{path.name}: date must look like 2026-11-13")
         summary = meta.get("summary", "")
+        upd = None
+        if meta.get("updated"):
+            try:
+                upd = datetime.strptime(meta["updated"].strip()[:10], "%Y-%m-%d").date()
+            except ValueError:
+                raise SystemExit(f"{path.name}: updated must look like 2026-11-13")
+        search_desc = meta.get("description", "") or summary
+        if len(search_desc) > 160:
+            print(f"Note: {path.name}: search description is {len(search_desc)} characters; "
+                  "Google usually shows about 155. Add a shorter 'description' to control it.")
         slug = re.sub(r"[^a-z0-9]+", "-", path.stem.lower()).strip("-")
         if any(i["slug"] == slug for i in items):
             raise SystemExit(f"{path.name}: another article already has the address /law/{slug}/")
@@ -258,6 +268,8 @@ def load_articles():
             "title": meta["title"],
             "topic": meta.get("topic", ""),
             "summary": summary,
+            "description": search_desc,
+            "updated": upd,
             "blurb": meta.get("blurb", summary),
             "date": d,
             "weight": weight,
@@ -395,6 +407,8 @@ def page_article(a, articles):
         eyebrow += f" · {esc(a['topic'])}"
     if a["date"]:
         eyebrow += f' <span>· <time datetime="{a["date"].isoformat()}">{esc(fmt_date(a["date"]))}</time></span>'
+    if a["updated"] and a["updated"] != a["date"]:
+        eyebrow += f' <span>· Updated <time datetime="{a["updated"].isoformat()}">{esc(fmt_date(a["updated"]))}</time></span>'
     lede = f'<p class="lede">{esc(a["summary"])}</p>' if a["summary"] else ""
     body = (
         '<main id="main"><article class="article">'
@@ -406,17 +420,28 @@ def page_article(a, articles):
         "and any regulator guidance for your situation.</p>"
         f"{nxt}</article></main>"
     )
-    ld = {
-        "@context": "https://schema.org", "@type": "Article",
-        "headline": a["title"], "description": a["summary"] or SITE["description"],
+    desc = a["description"] or SITE["description"]
+    article_ld = {
+        "@type": "Article",
+        "headline": a["title"], "description": desc,
         "inLanguage": SITE.get("lang", "en"), "author": person_ld(),
         "mainEntityOfPage": abs_url(f"/law/{a['slug']}/"),
     }
     if a["topic"]:
-        ld["articleSection"] = a["topic"]
+        article_ld["articleSection"] = a["topic"]
     if a["date"]:
-        ld["datePublished"] = ld["dateModified"] = a["date"].isoformat()
-    return layout(a["title"], a["summary"] or SITE["description"], body,
+        article_ld["datePublished"] = a["date"].isoformat()
+        article_ld["dateModified"] = (a["updated"] or a["date"]).isoformat()
+    crumbs = {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": abs_url("/")},
+            {"@type": "ListItem", "position": 2, "name": "Law", "item": abs_url("/law/")},
+            {"@type": "ListItem", "position": 3, "name": a["title"], "item": abs_url(f"/law/{a['slug']}/")},
+        ],
+    }
+    ld = {"@context": "https://schema.org", "@graph": [article_ld, crumbs]}
+    return layout(a["title"], desc, body,
                   f"/law/{a['slug']}/", current="/law/", kind="article",
                   jsonld=ld, published=a["date"])
 
@@ -475,7 +500,7 @@ def write(rel, text):
 
 def sitemap(articles):
     urls = [("/", None), ("/law/", None), ("/about/", None)]
-    urls += [(f"/law/{a['slug']}/", a["date"]) for a in articles]
+    urls += [(f"/law/{a['slug']}/", a["updated"] or a["date"]) for a in articles]
     rows = []
     for path, d in urls:
         last = f"<lastmod>{d.isoformat()}</lastmod>" if d else ""
