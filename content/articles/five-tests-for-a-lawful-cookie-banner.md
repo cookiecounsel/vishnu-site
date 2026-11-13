@@ -5,6 +5,9 @@ topic: Consent
 summary: "A cookie banner is lawful when five things are true. Most failures
   come from the same few mistakes: loading trackers early, hiding the reject
   option, and keeping no proof of the visitor's choice."
+description: "Five tests a cookie banner must pass to count as consent: timing,
+  active choice, easy refusal, easy withdrawal and proof."
+updated: 2026-11-13
 draft: false
 ---
 ---
