@@ -1,0 +1,21 @@
+{
+  "name": "Vishnu Prasad V",
+  "tagline": "Writing on privacy law.",
+  "location": "Kozhikode, Kerala, India",
+  "description": "Articles on privacy law: consent, data processing agreements and cross-border data rules, by Vishnu Prasad V, advocate in Kozhikode, Kerala.",
+  "lang": "en",
+  "site_url": "",
+  "base_path": "",
+  "email": "",
+  "linkedin": "",
+  "disclaimer": "Legal articles are general information, not legal advice.",
+  "nav": [
+    {"label": "Law", "path": "/law/"},
+    {"label": "About", "path": "/about/"}
+  ],
+  "credentials": [
+    {"label": "Qualifications", "value": "Law degree; diplomas in international privacy laws, LawSikho"},
+    {"label": "Enrolment", "value": "Bar Council of India"},
+    {"label": "Based in", "value": "Kozhikode, Kerala, India"}
+  ]
+}
