@@ -1,6 +1,6 @@
 {
   "site_url": "https://law.vishnuprasadv.com",
-  "description": "Articles on privacy law: consent, data processing agreements and cross-border data rules, by Vishnu Prasad V, advocate in Kozhikode, Kerala.",
+  "description": "Articles on law, covering privacy, contracts and business, by Vishnu Prasad V, advocate in Kozhikode, Kerala.",
   "nav": [
     {
       "label": "Articles",
@@ -20,5 +20,5 @@
       "url": "https://vishnuprasadv.com/"
     }
   ],
-  "tagline": "Writing on privacy law."
+  "tagline": "Writing on law, from the practitioner's side."
 }
