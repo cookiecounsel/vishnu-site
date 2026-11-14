@@ -10,12 +10,39 @@
   "linkedin": "https://www.linkedin.com/in/advvishnuprasadv/",
   "disclaimer": "Legal articles are general information, not legal advice.",
   "nav": [
-    {"label": "Law", "path": "/law/"},
-    {"label": "About", "path": "/about/"}
+    {
+      "label": "Law",
+      "path": "/law/"
+    },
+    {
+      "label": "About",
+      "path": "/about/"
+    }
   ],
   "credentials": [
-    {"label": "Qualifications", "value": "Law degree (CUSAT); diplomas in international privacy laws, LawSikho"},
-    {"label": "Enrolment", "value": "Bar Council of Kerala"},
-    {"label": "Based in", "value": "Kozhikode, Kerala, India"}
+    {
+      "label": "Practice",
+      "value": "Privacy and data protection; commercial and data-processing contracts"
+    },
+    {
+      "label": "Regimes",
+      "value": "GDPR, UK GDPR, CCPA/CPRA, India's DPDP Act 2023, PECR, EU AI Act"
+    },
+    {
+      "label": "Experience",
+      "value": "About four years as a legal analyst, mainly in privacy law"
+    },
+    {
+      "label": "Qualifications",
+      "value": "Law degree (CUSAT); diplomas in international privacy laws, LawSikho"
+    },
+    {
+      "label": "Enrolment",
+      "value": "Bar Council of Kerala"
+    },
+    {
+      "label": "Based in",
+      "value": "Kozhikode, Kerala, India"
+    }
   ]
 }
