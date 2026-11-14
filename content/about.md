@@ -17,6 +17,12 @@ I work directly with engineers, product managers and leadership, so most of my o
 
 I treat risk as a calibrated judgement, not a checklist. Where the law is settled, I say what it requires. Where it is not, I say so, set out the defensible positions, and recommend one with the reasons.
 
+## Beyond law
+
+I also write fiction: stories, serials and poems set in worlds of my own making. It has its own section and its own look, so the legal writing stays easy to find and the fiction stays easy to read.
+
 ## What you will find here
 
-Articles on consent, data processing agreements and cross-border data rules, written from the practitioner's side. Each states its date and is revised when the law or my view changes. They are general information, not legal advice.
+**Law.** Articles on consent, data processing agreements and cross-border data rules, written from the practitioner's side. Each states its date and is revised when the law or my view changes. They are general information, not legal advice.
+
+**Fiction.** Short stories, poems and chapters of longer work, published as they are ready. All of it is fiction, and all rights are reserved.
