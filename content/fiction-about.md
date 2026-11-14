@@ -1,6 +1,6 @@
 ---
 title: I write stories set in worlds I build myself.
-description: About Vishnu Prasad V, who writes fiction set in invented worlds, and who works as a lawyer in Kozhikode, Kerala.
+description: About Vishnu Prasad V, who writes fiction set in invented worlds, and who works as a lawyer.
 ---
 I am Vishnu Prasad V, and I write fiction. The stories, chapters and poems on this site are set in worlds I make up, and I build those worlds from the ground: the geography, the history, the politics and, where the story needs it, the language.
 
