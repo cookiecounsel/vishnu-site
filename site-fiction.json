@@ -1,0 +1,22 @@
+{
+  "name": "Vishnu Prasad V",
+  "tagline": "Stories and worlds of my own.",
+  "description": "Short stories, poems and serials set in worlds of my own making, by Vishnu Prasad V.",
+  "site_url": "https://fiction.vishnuprasadv.com",
+  "author_url": "https://vishnuprasadv.com/about/",
+  "disclaimer": "The legal articles on vishnuprasadv.com are general information, not legal advice.",
+  "nav": [
+    {
+      "label": "Fiction",
+      "path": "/"
+    },
+    {
+      "label": "Law",
+      "url": "https://vishnuprasadv.com/law/"
+    },
+    {
+      "label": "About the author",
+      "url": "https://vishnuprasadv.com/about/"
+    }
+  ]
+}

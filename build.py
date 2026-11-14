@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Builds the site from content/ and static/ into dist/.
 
-Usage:  python3 build.py
+Usage:  python3 build.py                 builds the main site (law and about) into dist/
+        python3 build.py --site fiction  builds the fiction site into dist-fiction/
 Needs only Python 3.8+ and the standard library.
 """
 import html
 import json
 import re
 import shutil
+import sys
 from datetime import date, datetime
 from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
@@ -15,9 +17,26 @@ from xml.sax.saxutils import escape as xml_escape
 ROOT = Path(__file__).resolve().parent
 CONTENT = ROOT / "content"
 STATIC = ROOT / "static"
-DIST = ROOT / "dist"
+
+
+def _mode():
+    a = sys.argv[1:]
+    if "--site" in a:
+        i = a.index("--site") + 1
+        m = a[i] if i < len(a) else ""
+        if m not in ("law", "fiction"):
+            raise SystemExit("Usage: python3 build.py [--site law|fiction]")
+        return m
+    return "law"
+
+
+MODE = _mode()   # "law" is the main site; "fiction" is the separate fiction site
+DIST = ROOT / ("dist-fiction" if MODE == "fiction" else "dist")
 
 SITE = json.loads((ROOT / "site.json").read_text(encoding="utf-8"))
+if MODE == "fiction":
+    SITE.update(json.loads((ROOT / "site-fiction.json").read_text(encoding="utf-8")))
+FICTION_URL = SITE.get("fiction_url", "").rstrip("/")   # address of the fiction site, used on the main site
 BASE = SITE.get("base_path", "").rstrip("/")   # e.g. "/repo-name" for a GitHub project site
 URL = SITE.get("site_url", "").rstrip("/")     # e.g. "https://example.com"
 SITE.setdefault("description", "")
@@ -323,7 +342,7 @@ def load_fiction():
             continue
         slug = _slugify(path.stem)
         if any(s["slug"] == slug for s in series):
-            raise SystemExit(f"{path.name}: another series already has the address /fiction/{slug}/")
+            raise SystemExit(f"{path.name}: another series already has the address /{slug}/")
         try:
             weight = int(meta.get("weight", 100))
         except ValueError:
@@ -362,14 +381,14 @@ def load_fiction():
                 "date": _fdate(meta, "date", path.name), "updated": _fdate(meta, "updated", path.name),
                 "summary": meta.get("summary", ""), "body": body}
         item["description"] = meta.get("description", "") or item["summary"]
-        item["url"] = f"/fiction/{owner['slug']}/{slug}/" if owner else f"/fiction/{slug}/"
+        item["url"] = f"/{owner['slug']}/{slug}/" if owner else f"/{slug}/"
         pieces.append(item)
         (owner["pieces"] if owner else standalone).append(item)
 
     taken = {s["slug"] for s in series}
     for a in standalone:
         if a["slug"] in taken:
-            raise SystemExit(f"{a['slug']}: a series and a standalone piece share the address /fiction/{a['slug']}/")
+            raise SystemExit(f"{a['slug']}: a series and a standalone piece share the address /{a['slug']}/")
         taken.add(a["slug"])
     series = [s for s in series if s["pieces"]]
     for s in series:
@@ -392,6 +411,9 @@ def nav_links(current, cls):
     for n in SITE["nav"]:
         if n.get("when") == "fiction" and not FICTION_ON:
             continue
+        if n.get("url"):
+            parts.append(f'<a href="{esc(n["url"].replace("{fiction_url}", FICTION_URL))}">{esc(n["label"])}</a>')
+            continue
         aria = ' aria-current="page"' if n["path"] == current else ""
         parts.append(f'<a href="{href(n["path"])}"{aria}>{esc(n["label"])}</a>')
     return f'<nav class="{cls}" aria-label="Main">' + "".join(parts) + "</nav>"
@@ -400,6 +422,7 @@ def nav_links(current, cls):
 def layout(title, desc, body, path, current=None, kind="website", noindex=False, jsonld=None, published=None,
            theme=None):
     name = SITE["name"]
+    theme = theme or ("fiction" if MODE == "fiction" else None)
     full_title = name if not title else f"{title} | {name}"
     head = [
         '<meta charset="utf-8">',
@@ -450,7 +473,7 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False,
 
 
 def person_ld():
-    p = {"@type": "Person", "name": SITE["name"], "url": abs_url("/about/"),
+    p = {"@type": "Person", "name": SITE["name"], "url": SITE.get("author_url") or abs_url("/about/"),
          "jobTitle": "Advocate",
          "knowsAbout": ["Privacy law", "Data protection", "Consent management", "GDPR", "UK GDPR",
                         "CCPA and CPRA", "India's Digital Personal Data Protection Act 2023",
@@ -477,61 +500,44 @@ def entry_html(a):
 
 # ---------------------------------------------------------------- pages
 
+def _go(url):
+    return url if re.match(r"https?://", url) else href(url)
+
+
 def card_items(rows):
     li = "".join(
-        f'<li><a href="{href(url)}"><span class="ci-title">{esc(title)}</span>'
+        f'<li><a href="{_go(url)}"><span class="ci-title">{esc(title)}</span>'
         f'<span class="ci-meta">{esc(meta)}</span></a></li>' for url, title, meta in rows)
     return f'<div class="card-list"><p class="label">Latest</p><ul>{li}</ul></div>'
 
 
 def home_card(cls, label, path, text, rows):
-    return (f'<div class="card {cls}"><h2><a class="card-link" href="{href(path)}">{esc(label)}'
+    return (f'<div class="card {cls}"><h2><a class="card-link" href="{_go(path)}">{esc(label)}'
             '<span class="arrow" aria-hidden="true">&rarr;</span></a></h2>'
             f'<p class="card-text">{esc(text)}</p>{card_items(rows)}</div>')
 
 
+def article_card(a):
+    meta = " · ".join(x for x in (fmt_date(a["date"]) if a["date"] else "", a["topic"]) if x)
+    return ('<div class="card card-law"><h2>'
+            f'<a class="card-link" href="{href("/law/" + a["slug"] + "/")}">{esc(a["title"])}'
+            '<span class="arrow" aria-hidden="true">&rarr;</span></a></h2>'
+            f'<p class="card-text">{esc(a["blurb"])}</p>'
+            f'<p class="card-meta">{esc(meta)}</p></div>')
+
+
 def page_home(articles, pieces=()):
     m, _ = parse(CONTENT / "home.md")
-    limit = int(SITE.get("home_articles", 5))
-    both = FICTION_ON
-    kicker = m.get("kicker_both", "") if both and m.get("kicker_both") else m.get("kicker", "")
-    title = m.get("title_both") if both and m.get("title_both") else m["title"]
-    intro = m.get("intro_both") if both and m.get("intro_both") else m.get("intro", "")
-    hero = (
+    limit = int(SITE.get("home_articles", 3))
+    body = (
         '<main id="main"><section class="wrap hero">'
-        f'<p class="eyebrow">{esc(kicker)}</p>'
-        f'<h1 class="display xl">{esc(title)}</h1>'
-        f'<p class="intro">{esc(intro)}</p></section>'
+        f'<p class="eyebrow">{esc(m.get("kicker", ""))}</p>'
+        f'<h1 class="display xl">{esc(m["title"])}</h1>'
+        f'<p class="intro">{esc(m.get("intro", ""))}</p></section>'
+        '<section class="wrap"><div class="section-head"><h2 class="label">Latest articles</h2>'
+        f'<a class="more" href="{href("/law/")}">All articles</a></div>'
+        '<div class="cards">' + "".join(article_card(a) for a in articles[:limit]) + "</div></section></main>"
     )
-    if both:
-        lm, _ = parse(CONTENT / "law.md")
-        fm, _ = parse(CONTENT / "fiction.md")
-        count = int(SITE.get("home_card_items", 3))
-        law_rows = [(f"/law/{a['slug']}/", a["title"],
-                     " · ".join(x for x in (fmt_date(a["date"]) if a["date"] else "", a["topic"]) if x))
-                    for a in articles[:count]]
-        newest = sorted(pieces, key=lambda c: -(c["date"].toordinal() if c["date"] else 0))[:count]
-
-        def where(c):
-            if c["series"]:
-                return f"{c['series']['title']}, chapter {c['series']['pieces'].index(c) + 1}"
-            return FORM_LABEL[c["form"]]
-        fic_rows = [(c["url"], c["title"],
-                     " · ".join(x for x in (fmt_date(c["date"]) if c["date"] else "", where(c)) if x))
-                    for c in newest]
-        cards = (
-            '<section class="wrap"><div class="cards">'
-            + home_card("card-law", "Law", "/law/", lm.get("card") or lm.get("intro", ""), law_rows)
-            + home_card("card-fiction", "Fiction", "/fiction/", fm.get("card") or fm.get("intro", ""), fic_rows)
-            + "</div></section></main>"
-        )
-        body = hero + cards
-    else:
-        body = hero + (
-            '<section class="wrap"><div class="section-head"><h2 class="label">Articles</h2>'
-            f'<a class="more" href="{href("/law/")}">All articles</a></div>'
-            '<div class="entries">' + "".join(entry_html(a) for a in articles[:limit]) + "</div></section></main>"
-        )
     return layout("", SITE["description"], body, "/", current="/",
                   jsonld={"@context": "https://schema.org", "@type": "WebSite", "name": SITE["name"],
                           "url": abs_url("/"), "description": SITE["description"],
@@ -629,7 +635,7 @@ def page_fiction(series, standalone):
             n = len(s["pieces"])
             meta = [esc(s["status"])] if s["status"] else []
             meta.append(f"{n} {'piece' if n == 1 else 'pieces'}")
-            rows.append(fiction_entry(f"/fiction/{s['slug']}/", meta, s["title"], s["summary"]))
+            rows.append(fiction_entry(f"/{s['slug']}/", meta, s["title"], s["summary"]))
         parts.append('<section class="wrap list-section"><h2 class="label section-label">Series</h2>'
                      '<div class="entries">' + "".join(rows) + "</div></section>")
     if standalone:
@@ -640,6 +646,8 @@ def page_fiction(series, standalone):
             rows.append(fiction_entry(a["url"], meta, a["title"], a["summary"]))
         parts.append('<section class="wrap list-section"><h2 class="label section-label">Stories and poems</h2>'
                      '<div class="entries">' + "".join(rows) + "</div></section>")
+    if not parts:
+        parts.append('<section class="wrap list-section"><p class="intro">The first pieces will appear here soon.</p></section>')
     body = (
         '<main id="main"><section class="wrap page-head">'
         f'<p class="eyebrow">{esc(m.get("kicker", "Fiction"))}</p>'
@@ -649,14 +657,14 @@ def page_fiction(series, standalone):
         + f'<div class="wrap"><p class="list-note">{esc(SITE.get("fiction_notice", ""))}</p></div></main>'
     )
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Fiction",
-          "url": abs_url("/fiction/"), "inLanguage": SITE.get("lang", "en"), "author": person_ld()}
-    return layout("Fiction", m.get("intro", SITE["description"]), body, "/fiction/", current="/fiction/",
+          "url": abs_url("/"), "inLanguage": SITE.get("lang", "en"), "author": person_ld()}
+    return layout("Fiction", m.get("intro", SITE["description"]), body, "/", current="/",
                   jsonld=ld, theme="fiction")
 
 
 def _crumbs(*trail):
     items = [{"@type": "ListItem", "position": i + 1, "name": n, "item": abs_url(u)}
-             for i, (n, u) in enumerate((("Home", "/"),) + trail)]
+             for i, (n, u) in enumerate((("Fiction", "/"),) + trail)]
     return {"@type": "BreadcrumbList", "itemListElement": items}
 
 
@@ -673,7 +681,7 @@ def page_series(s):
     synopsis = f'<div class="prose">{markdown(s["body"])}</div>' if s["body"] else ""
     body = (
         '<main id="main"><article class="article series-head">'
-        f'<a class="back" href="{href("/fiction/")}">All fiction</a>'
+        f'<a class="back" href="{href("/")}">All fiction</a>'
         f'<p class="eyebrow">Fiction{status}</p><h1>{esc(s["title"])}</h1>{lede}{synopsis}'
         f'<p><a class="readbtn" href="{href(first["url"])}">Start reading: {esc(first["title"])}</a></p></article>'
         '<section class="wrap list-section"><h2 class="label section-label">Contents</h2>'
@@ -681,12 +689,12 @@ def page_series(s):
     )
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "CreativeWorkSeries", "name": s["title"], "description": s["description"] or SITE["description"],
-         "url": abs_url(f"/fiction/{s['slug']}/"), "inLanguage": SITE.get("lang", "en"), "author": person_ld(),
+         "url": abs_url(f"/{s['slug']}/"), "inLanguage": SITE.get("lang", "en"), "author": person_ld(),
          "genre": "Fiction", "hasPart": [{"@type": "CreativeWork", "name": c["title"], "position": i,
                                           "url": abs_url(c["url"])} for i, c in enumerate(s["pieces"], 1)]},
-        _crumbs(("Fiction", "/fiction/"), (s["title"], f"/fiction/{s['slug']}/"))]}
-    return layout(s["title"], s["description"] or SITE["description"], body, f"/fiction/{s['slug']}/",
-                  current="/fiction/", jsonld=ld, theme="fiction")
+        _crumbs((s["title"], f"/{s['slug']}/"))]}
+    return layout(s["title"], s["description"] or SITE["description"], body, f"/{s['slug']}/",
+                  current="/", jsonld=ld, theme="fiction")
 
 
 def page_piece(a, standalone):
@@ -695,7 +703,7 @@ def page_piece(a, standalone):
     if s:
         i = s["pieces"].index(a)
         eyebrow += f" · {esc(s['title'])} · {esc(FORM_LABEL[a['form']])} {i + 1} of {len(s['pieces'])}"
-        back = f'<a class="back" href="{href("/fiction/" + s["slug"] + "/")}">Back to {esc(s["title"])}</a>'
+        back = f'<a class="back" href="{href("/" + s["slug"] + "/")}">Back to {esc(s["title"])}</a>'
         prev = s["pieces"][i - 1] if i > 0 else None
         nxt = s["pieces"][i + 1] if i + 1 < len(s["pieces"]) else None
         cards = ""
@@ -706,12 +714,12 @@ def page_piece(a, standalone):
             cards += (f'<a class="nextcard" href="{href(nxt["url"])}"><span class="label">Next</span>'
                       f'<strong>{esc(nxt["title"])}</strong></a>')
         else:
-            cards += (f'<a class="nextcard" href="{href("/fiction/" + s["slug"] + "/")}"><span class="label">'
+            cards += (f'<a class="nextcard" href="{href("/" + s["slug"] + "/")}"><span class="label">'
                       f'End of the current text</span><strong>Back to {esc(s["title"])}</strong></a>')
         nav = f'<div class="chapnav">{cards}</div>'
     else:
         eyebrow += f" · {esc(FORM_LABEL[a['form']])}"
-        back = f'<a class="back" href="{href("/fiction/")}">All fiction</a>'
+        back = f'<a class="back" href="{href("/")}">All fiction</a>'
         nav = ""
         if len(standalone) > 1:
             other = standalone[(standalone.index(a) + 1) % len(standalone)]
@@ -730,17 +738,17 @@ def page_piece(a, standalone):
     node = {"@type": "CreativeWork", "name": a["title"], "description": a["description"] or SITE["description"],
             "inLanguage": SITE.get("lang", "en"), "author": person_ld(), "genre": FORM_LABEL[a["form"]],
             "mainEntityOfPage": abs_url(a["url"])}
-    trail = [("Fiction", "/fiction/")]
+    trail = []
     if s:
         node["position"] = s["pieces"].index(a) + 1
-        node["isPartOf"] = {"@type": "CreativeWorkSeries", "name": s["title"], "url": abs_url(f"/fiction/{s['slug']}/")}
-        trail.append((s["title"], f"/fiction/{s['slug']}/"))
+        node["isPartOf"] = {"@type": "CreativeWorkSeries", "name": s["title"], "url": abs_url(f"/{s['slug']}/")}
+        trail.append((s["title"], f"/{s['slug']}/"))
     trail.append((a["title"], a["url"]))
     if a["date"]:
         node["datePublished"] = a["date"].isoformat()
         node["dateModified"] = (a["updated"] or a["date"]).isoformat()
     ld = {"@context": "https://schema.org", "@graph": [node, _crumbs(*trail)]}
-    return layout(a["title"], a["description"] or SITE["description"], body, a["url"], current="/fiction/",
+    return layout(a["title"], a["description"] or SITE["description"], body, a["url"], current="/",
                   kind="article", jsonld=ld, published=a["date"], theme="fiction")
 
 
@@ -797,12 +805,13 @@ def write(rel, text):
 
 
 def sitemap(articles, series=(), pieces=()):
-    urls = [("/", None), ("/law/", None), ("/about/", None)]
-    urls += [(f"/law/{a['slug']}/", a["updated"] or a["date"]) for a in articles]
-    if pieces:
-        urls.append(("/fiction/", None))
-        urls += [(f"/fiction/{s['slug']}/", s["date"]) for s in series]
+    if MODE == "fiction":
+        urls = [("/", None)]
+        urls += [(f"/{s['slug']}/", s["date"]) for s in series]
         urls += [(c["url"], c["updated"] or c["date"]) for c in pieces]
+    else:
+        urls = [("/", None), ("/law/", None), ("/about/", None)]
+        urls += [(f"/law/{a['slug']}/", a["updated"] or a["date"]) for a in articles]
     rows = []
     for path, d in urls:
         last = f"<lastmod>{d.isoformat()}</lastmod>" if d else ""
@@ -814,6 +823,10 @@ def sitemap(articles, series=(), pieces=()):
 def feed(articles, pieces=()):
     today = date.today().isoformat() + "T00:00:00Z"
     entries = []
+    if MODE == "fiction":
+        articles = []
+    else:
+        pieces = ()
     for c in pieces:
         stamp = (c["date"].isoformat() + "T00:00:00Z") if c["date"] else today
         link = xml_escape(abs_url(c["url"]))
@@ -838,9 +851,11 @@ def feed(articles, pieces=()):
 
 def main():
     global FICTION_ON
-    articles = load_articles()
+    articles = [] if MODE == "fiction" else load_articles()
     series, standalone, pieces = load_fiction()
-    FICTION_ON = bool(pieces)
+    FICTION_ON = bool(pieces) and (MODE == "fiction" or bool(FICTION_URL))
+    if MODE == "law" and pieces and not FICTION_URL:
+        print("Note: fiction pieces exist but fiction_url is not set in site.json, so the Fiction card and menu link are hidden.")
     if DIST.exists():
         shutil.rmtree(DIST)
     DIST.mkdir()
@@ -857,18 +872,20 @@ def main():
     css = (STATIC / "style.css").read_text(encoding="utf-8")
     write("style.css", (fonts + "\n" if fonts else "") + css)
 
-    write("index.html", page_home(articles, pieces))
-    write("law/index.html", page_law(articles))
-    write("about/index.html", page_about())
-    write("404.html", page_404())
-    for a in articles:
-        write(f"law/{a['slug']}/index.html", page_article(a, articles))
-    if FICTION_ON:
-        write("fiction/index.html", page_fiction(series, standalone))
+    if MODE == "fiction":
+        write("index.html", page_fiction(series, standalone))
+        write("404.html", page_404())
         for s in series:
-            write(f"fiction/{s['slug']}/index.html", page_series(s))
+            write(f"{s['slug']}/index.html", page_series(s))
         for c in pieces:
             write(c["url"].strip("/") + "/index.html", page_piece(c, standalone))
+    else:
+        write("index.html", page_home(articles, pieces))
+        write("law/index.html", page_law(articles))
+        write("about/index.html", page_about())
+        write("404.html", page_404())
+        for a in articles:
+            write(f"law/{a['slug']}/index.html", page_article(a, articles))
 
     robots = "User-agent: *\nAllow: /\n"
     if URL:
@@ -877,7 +894,10 @@ def main():
         write("feed.xml", feed(articles, pieces))
     write("robots.txt", robots)
 
-    print(f"Built {len(articles)} article(s) and {len(pieces)} fiction piece(s) into {DIST}")
+    if MODE == "fiction":
+        print(f"Built the fiction site: {len(series)} series and {len(pieces)} piece(s) into {DIST}")
+    else:
+        print(f"Built {len(articles)} article(s) and {len(pieces)} fiction piece(s) into {DIST}")
     if not URL:
         print("Note: site_url is empty, so sitemap.xml, feed.xml and canonical links were skipped.")
     if not fonts:
