@@ -25,7 +25,8 @@ Note: GitHub Pages ignores `static/_headers`, so the strict security headers onl
 site.json                 name, tagline, contact details, navigation, credentials
 content/home.md           home page headline and intro
 content/law.md            Law page headline and intro
-content/about.md          About page text
+content/about.md          About page text (law site, at /law/about/)
+content/fiction-about.md  About page text (fiction site, at /about/)
 content/articles/*.md     one file per article
 content/fiction.md        Fiction site headline, intro and home page card line
 content/series/*.md       one file per fiction series (a novel or serial)

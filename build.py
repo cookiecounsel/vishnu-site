@@ -40,7 +40,7 @@ FICTION_URL = SITE.get("fiction_url", "").rstrip("/")   # address of the fiction
 BASE = SITE.get("base_path", "").rstrip("/")   # e.g. "/repo-name" for a GitHub project site
 URL = SITE.get("site_url", "").rstrip("/")     # e.g. "https://example.com"
 SITE.setdefault("description", "")
-SITE.setdefault("nav", [{"label": "Law", "path": "/law/"}, {"label": "About", "path": "/about/"}])
+SITE.setdefault("nav", [{"label": "Law", "path": "/law/"}, {"label": "About", "path": "/law/about/"}])
 FICTION_ON = False   # becomes True when at least one fiction piece is published
 
 # Self-hosted fonts. Drop these files into static/fonts/ and they are used automatically.
@@ -473,7 +473,7 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False,
 
 
 def person_ld():
-    p = {"@type": "Person", "name": SITE["name"], "url": SITE.get("author_url") or abs_url("/about/"),
+    p = {"@type": "Person", "name": SITE["name"], "url": SITE.get("author_url") or abs_url("/about/" if MODE == "fiction" else "/law/about/"),
          "jobTitle": "Advocate",
          "knowsAbout": ["Privacy law", "Data protection", "Consent management", "GDPR", "UK GDPR",
                         "CCPA and CPRA", "India's Digital Personal Data Protection Act 2023",
@@ -774,6 +774,8 @@ def page_piece(a, standalone):
 
 
 def page_about():
+    if MODE == "fiction":
+        return page_fiction_about()
     m, text = parse(CONTENT / "about.md")
     facts = [(c["label"], esc(c["value"])) for c in SITE.get("credentials", [])]
     if SITE.get("email"):
@@ -793,7 +795,21 @@ def page_about():
         "Writing to me does not create an advocate-client relationship, so please do not send "
         "confidential information in a first email.</p></section></main>"
     )
-    return layout("About", "About " + SITE["name"] + ", advocate in Kozhikode, Kerala.", body, "/about/", current="/about/",
+    return layout("About", "About " + SITE["name"] + ", advocate in Kozhikode, Kerala.", body, "/law/about/", current="/law/about/",
+                  jsonld={"@context": "https://schema.org", "@type": "ProfilePage", "mainEntity": person_ld()})
+
+
+def page_fiction_about():
+    m, text = parse(CONTENT / "fiction-about.md")
+    body = (
+        '<main id="main"><section class="wrap page-head">'
+        '<p class="eyebrow">About the author</p>'
+        f'<h1 class="display">{esc(m["title"])}</h1>'
+        f'<div class="about"><div class="prose">{markdown(text)}</div></div>'
+        f'<p class="fine">{esc(SITE.get("fiction_notice", ""))}</p></section></main>'
+    )
+    return layout("About", m.get("description") or "About " + SITE["name"] + ", author of the stories on this site.",
+                  body, "/about/", current="/about/",
                   jsonld={"@context": "https://schema.org", "@type": "ProfilePage", "mainEntity": person_ld()})
 
 
@@ -827,11 +843,11 @@ def write(rel, text):
 
 def sitemap(articles, series=(), pieces=()):
     if MODE == "fiction":
-        urls = [("/", None)]
+        urls = [("/", None), ("/about/", None)]
         urls += [(f"/{s['slug']}/", s["date"]) for s in series]
         urls += [(c["url"], c["updated"] or c["date"]) for c in pieces]
     else:
-        urls = [("/", None), ("/law/", None), ("/about/", None)]
+        urls = [("/", None), ("/law/", None), ("/law/about/", None)]
         urls += [(f"/law/{a['slug']}/", a["updated"] or a["date"]) for a in articles]
     rows = []
     for path, d in urls:
@@ -895,6 +911,7 @@ def main():
 
     if MODE == "fiction":
         write("index.html", page_fiction(series, standalone))
+        write("about/index.html", page_about())
         write("404.html", page_404())
         for s in series:
             write(f"{s['slug']}/index.html", page_series(s))
@@ -903,7 +920,8 @@ def main():
     else:
         write("index.html", page_home(articles, pieces))
         write("law/index.html", page_law(articles))
-        write("about/index.html", page_about())
+        write("law/about/index.html", page_about())
+        write("_redirects", "/about /law/about/ 301\n/about/ /law/about/ 301\n")
         write("404.html", page_404())
         for a in articles:
             write(f"law/{a['slug']}/index.html", page_article(a, articles))
