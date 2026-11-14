@@ -480,7 +480,7 @@ def person_ld():
          "jobTitle": "Advocate",
          "knowsAbout": ["Privacy law", "Data protection", "Consent management", "GDPR", "UK GDPR",
                         "CCPA and CPRA", "India's Digital Personal Data Protection Act 2023",
-                        "Data processing agreements", "Cross-border data transfers", "EU AI Act"],
+                        "Data processing agreements", "Cross-border data transfers", "EU AI Act"] + (["Fiction writing"] if MODE == "hub" else []),
          "address": {"@type": "PostalAddress", "addressLocality": "Kozhikode", "addressRegion": "Kerala", "addressCountry": "IN"}}
     if SITE.get("linkedin"):
         p["sameAs"] = [SITE["linkedin"]]
