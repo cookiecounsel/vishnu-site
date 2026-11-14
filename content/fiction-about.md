@@ -8,7 +8,7 @@ I come to this the way I come to everything else, by working out how the parts f
 
 ## Beyond the stories
 
-By day I am a lawyer in Kozhikode, Kerala, working in privacy law and commercial contracts. That work is separate from this site, and the two do not share a home. If you came here for the law, my articles are on vishnuprasadv.com.
+By day I am a lawyer in Kozhikode, Kerala, working in privacy law and commercial contracts. The two share a building but not an apartment: my law articles have their own home at [law.vishnuprasadv.com](https://law.vishnuprasadv.com), and [vishnuprasadv.com](https://vishnuprasadv.com) is the front door to both.
 
 ## What you will find here
 
