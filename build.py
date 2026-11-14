@@ -524,9 +524,9 @@ def page_home(articles, pieces=()):
     m, _ = parse(CONTENT / "home.md")
     limit = int(SITE.get("home_articles", 5))
     both = FICTION_ON
-    kicker = m.get("kicker_both", "") if both and m.get("kicker_both") else m.get("kicker", "")
-    title = m.get("title_both") if both and m.get("title_both") else m["title"]
-    intro = m.get("intro_both") if both and m.get("intro_both") else m.get("intro", "")
+    kicker = m.get("kicker_both") or m.get("kicker", "")   # the home page always uses the combined wording
+    title = m.get("title_both") or m["title"]
+    intro = m.get("intro_both") or m.get("intro", "")
     hero = (
         '<main id="main"><section class="wrap hero">'
         f'<p class="eyebrow">{esc(kicker)}</p>'
