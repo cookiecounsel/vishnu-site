@@ -382,7 +382,8 @@ def load_fiction():
         slug = _slugify(path.stem)
         item = {"slug": slug, "title": meta["title"], "form": form, "series": owner, "order": order,
                 "date": _fdate(meta, "date", path.name), "updated": _fdate(meta, "updated", path.name),
-                "summary": meta.get("summary", ""), "body": body}
+                "summary": meta.get("summary", ""), "body": body,
+                "ai": meta.get("ai_assisted", "").lower() == "true"}
         item["description"] = meta.get("description", "") or item["summary"]
         item["url"] = f"/{owner['slug']}/{slug}/" if owner else f"/{slug}/"
         pieces.append(item)
@@ -764,6 +765,8 @@ def page_piece(a, standalone):
     inner = poem_html(a["body"]) if a["form"] == "poem" else markdown(a["body"])
     cls = "prose reading poem" if a["form"] == "poem" else "prose reading"
     notice = f'<p class="note">{esc(SITE.get("fiction_notice", ""))}</p>' if SITE.get("fiction_notice") else ""
+    if a.get("ai"):
+        notice = ('<p class="note">' + esc(SITE.get("ai_notice", "")) + "</p>" + notice) if SITE.get("ai_notice") else notice
     body = (
         '<main id="main"><article class="article">' + back + f'<p class="eyebrow">{eyebrow}</p>'
         f'<h1>{esc(a["title"])}</h1>{lede}<div class="{cls}">{inner}</div>{notice}{nav}</article></main>'
