@@ -1,0 +1,10 @@
+{
+  "name": "vishnu-fiction",
+  "compatibility_date": "2026-11-13",
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist-fiction",
+    "not_found_handling": "404-page"
+  }
+}

@@ -218,8 +218,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .card-list, .arrow { transition: opacity 0.3s ease, transform 0.3s ease; }
   .card:hover, .card:focus-within { flex-grow: 1.3; background: #F9F5EB; }
   .cards:has(.card:hover, .card:focus-within) .card:not(:hover):not(:focus-within) { flex-grow: 0.8; }
-  .cards:has(.card:hover, .card:focus-within) .card:not(:hover):not(:focus-within) .card-list { opacity: 0.55; }
-  .card:hover .arrow, .card:focus-within .arrow { transform: translateX(8px); }
+  .cards:has(.card:hover, .card:focus-within) .card:not(:hover):not(:focus-within) .card-list, .cards:has(.card:hover, .card:focus-within) .card:not(:hover):not(:focus-within)   .card:hover .arrow, .card:focus-within .arrow { transform: translateX(8px); }
   body:has(.card-fiction:hover), body:has(.card-fiction:focus-within) { --accent: #7A2E2A; }
 }
 @media (prefers-reduced-motion: reduce) {
