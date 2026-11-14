@@ -517,27 +517,48 @@ def home_card(cls, label, path, text, rows):
             f'<p class="card-text">{esc(text)}</p>{card_items(rows)}</div>')
 
 
-def article_card(a):
-    meta = " · ".join(x for x in (fmt_date(a["date"]) if a["date"] else "", a["topic"]) if x)
-    return ('<div class="card card-law"><h2>'
-            f'<a class="card-link" href="{href("/law/" + a["slug"] + "/")}">{esc(a["title"])}'
-            '<span class="arrow" aria-hidden="true">&rarr;</span></a></h2>'
-            f'<p class="card-text">{esc(a["blurb"])}</p>'
-            f'<p class="card-meta">{esc(meta)}</p></div>')
-
-
 def page_home(articles, pieces=()):
     m, _ = parse(CONTENT / "home.md")
-    limit = int(SITE.get("home_articles", 3))
-    body = (
+    limit = int(SITE.get("home_articles", 5))
+    both = FICTION_ON
+    kicker = m.get("kicker_both", "") if both and m.get("kicker_both") else m.get("kicker", "")
+    title = m.get("title_both") if both and m.get("title_both") else m["title"]
+    intro = m.get("intro_both") if both and m.get("intro_both") else m.get("intro", "")
+    hero = (
         '<main id="main"><section class="wrap hero">'
-        f'<p class="eyebrow">{esc(m.get("kicker", ""))}</p>'
-        f'<h1 class="display xl">{esc(m["title"])}</h1>'
-        f'<p class="intro">{esc(m.get("intro", ""))}</p></section>'
-        '<section class="wrap"><div class="section-head"><h2 class="label">Latest articles</h2>'
-        f'<a class="more" href="{href("/law/")}">All articles</a></div>'
-        '<div class="cards">' + "".join(article_card(a) for a in articles[:limit]) + "</div></section></main>"
+        f'<p class="eyebrow">{esc(kicker)}</p>'
+        f'<h1 class="display xl">{esc(title)}</h1>'
+        f'<p class="intro">{esc(intro)}</p></section>'
     )
+    if both:
+        lm, _ = parse(CONTENT / "law.md")
+        fm, _ = parse(CONTENT / "fiction.md")
+        count = int(SITE.get("home_card_items", 3))
+        law_rows = [(f"/law/{a['slug']}/", a["title"],
+                     " · ".join(x for x in (fmt_date(a["date"]) if a["date"] else "", a["topic"]) if x))
+                    for a in articles[:count]]
+        newest = sorted(pieces, key=lambda c: -(c["date"].toordinal() if c["date"] else 0))[:count]
+
+        def where(c):
+            if c["series"]:
+                return f"{c['series']['title']}, chapter {c['series']['pieces'].index(c) + 1}"
+            return FORM_LABEL[c["form"]]
+        fic_rows = [(FICTION_URL + c["url"], c["title"],
+                     " · ".join(x for x in (fmt_date(c["date"]) if c["date"] else "", where(c)) if x))
+                    for c in newest]
+        cards = (
+            '<section class="wrap"><div class="cards">'
+            + home_card("card-law", "Law", "/law/", lm.get("card") or lm.get("intro", ""), law_rows)
+            + home_card("card-fiction", "Fiction", FICTION_URL + "/", fm.get("card") or fm.get("intro", ""), fic_rows)
+            + "</div></section></main>"
+        )
+        body = hero + cards
+    else:
+        body = hero + (
+            '<section class="wrap"><div class="section-head"><h2 class="label">Articles</h2>'
+            f'<a class="more" href="{href("/law/")}">All articles</a></div>'
+            '<div class="entries">' + "".join(entry_html(a) for a in articles[:limit]) + "</div></section></main>"
+        )
     return layout("", SITE["description"], body, "/", current="/",
                   jsonld={"@context": "https://schema.org", "@type": "WebSite", "name": SITE["name"],
                           "url": abs_url("/"), "description": SITE["description"],
