@@ -1,0 +1,27 @@
+---
+title: New EU digital Omnibus: what they mean for CMPs
+date: 2025-11-21
+topic: Consent
+summary: "What the EU Digital Omnibus proposal means for consent management platforms: consent banners as a fallback to software-level signals, and cookie rules moving from ePrivacy into the GDPR."
+description: "What the EU Digital Omnibus means for consent management platforms: software-level consent signals and cookie rules moving into the GDPR."
+draft: false
+---
+The new EU Digital Omnibus proposal is set to reshape the digital compliance rules across the board. By integrating cookie consent into the GDPR framework and reducing administrative friction, the proposal aims to make compliance less of a bottleneck for new technologies. One of the significant changes that are proposed by the omnibus is the introduction of a software level consent mechanism. This aims to reduce friction and consent fatigue for users. Another key proposal is to bring cookie consent rules under the GDPR framework. Right now, websites have to navigate both ePrivacy and GDPR requirements, which often creates conflicts in the consent process. This move could help avoid such a confusion. Let’s now examine these changes and how they will affect CMPs in detail.
+
+The main business of a CMP is to provide cookie consent banners so that websites operating in the European Union can comply with GDPR. This has been the norm since 2018. However, the recent Digital Omnibus proposals aim to change this. The consent banner mechanism has been criticised for causing user fatigue and friction for website owners. As a result, site owners have found it harder to monetize their sites when users simply choose to ignore or close these distracting banners instead of actively exercising their rights, which ultimately undermines the intended process of informed consent.
+
+The new proposals introduces a software-level consent mechanism, allowing users to set their cookie preferences once – accepting certain cookies, rejecting others, accepting all at once, or rejecting them altogether. This means that consent banners become a secondary fallback rather than the primary method of gaining consent. If the user has not made any software-level choices, the banner will still appear. In short, the future of the consent banners will shift to a back up role, with primary control moving to a software level consent system.
+
+Now let us look at the second major change: the omnibus proposal proposes integrating the ePrivacy rules within the GDPR framework (article 88a of the proposals). This is one of the most consequential shifts in the package. Today, cookie consent sits awkwardly between two parallel regimes: the ePrivacy directive (which governs cookies and tracking technologies) and the GDPR (which governs personal data processing as a whole). This dual-law structure has created years of interpretive conflict, inconsistent enforcement, and uneven compliance practices across the EU.
+
+By moving cookie related obligations to GDPR, the Omnibus aims to consolidate the rules under a single, directly enforceable framework. In theory, this streamlining reduces contradictory interpretations. In practice, it also raises the compliance stakes. Cookie consent violations will now fall under the GDPR’s enforcement architecture, meaning higher fines, clearer accountability, and less room for websites to rely on ambiguous national guidelines.
+
+For CMPs, this change is significant. Their existing banner logic is built around the old split: part ePrivacy, part GDPR. once cookie consent becomes entirely a GDPR matter, CMPs must adjust their legal basis classification, documentation standards, and audit trails to match full GDPR requirements. This also removes the historical excuse of “conflicting frameworks” that many CMPs and ad-tech vendors relied on when consent flows were challenged.
+
+Another consequence is harmonisation. National authorities will have less room to diverge in how cookie consent is interpreted, since GDPR enforcement is already more coordinated. For businesses operating across the EU, this could reduce the administrative burden of tracking the different interpretations across the national authorities. For CMPs, it means updating their products to align with a single, stricter standard rather than maintaining country-specific patches.
+
+Overall, integrating ePrivacy into the GDPR framework simplifies the legal landscape but raises compliance expectations. For CMPs, this shift will demand both technical adaptation and a clear repositioning of how their consent systems are built and justified.
+
+In conclusion, the EU Digital Omnibus proposal brings three fundamental changes that CMPs must prepare for. First, as we have discussed early, consent banners will become a fallback rather than the primary consent mechanism. Second, CMPs will need to implement features that read software-level consent signals, shifting the core logic from user interface interactions to automated signal processing. Finally, the existing business model of CMPs must be revised to align with these new legal requirements if and when they are adopted into law.
+
+By addressing these points, CMPs can stay ahead of the regulatory curve and ensure that their solutions remain compliant, functional, and aligned with the evolving privacy landscape. In the longer run, this shift may also encourage CMPs to innovate beyond mere compliance, offering more user-friendly and transparent consent experiences that build genuine trust with the users.
