@@ -27,6 +27,9 @@ content/home.md           home page headline and intro
 content/law.md            Law page headline and intro
 content/about.md          About page text
 content/articles/*.md     one file per article
+content/fiction.md        Fiction page headline and intro
+content/series/*.md       one file per fiction series (a novel or serial)
+content/pieces/*.md       one file per chapter, short story or poem
 static/style.css          all styling
 static/media/             images uploaded from the editor
 static/fonts/             optional self-hosted fonts (see below)
@@ -43,6 +46,26 @@ python3 -m http.server 8000 -d dist
 ```
 
 Then open http://localhost:8000. Python 3.8 or newer is the only requirement.
+
+## Fiction
+
+The Fiction section stays hidden (no menu entry, no home page card) until the first piece is published. Then the home page shows two cards, Law and Fiction, and the menu gains a Fiction link.
+
+A **series** (`content/series/`) is a novel or serial: title, summary, status and a synopsis. A **piece** (`content/pieces/`) is one text. A chapter is a piece with a Series and a chapter number. A short story or poem is a piece with no Series. In the editor these are "Fiction series" and "Fiction pieces".
+
+```
+---
+title: The First Gate
+form: chapter          # chapter, story or poem
+series: The Test Saga  # leave out for a standalone piece
+order: 1               # chapter number, used to sort and to link previous and next
+date: 2026-12-01
+summary: One or two sentences shown in the lists.
+---
+Text of the chapter. A line containing only --- is shown as a scene break.
+```
+
+Addresses: `/fiction/` lists everything, `/fiction/<series>/` is the series page with its contents, `/fiction/<series>/<chapter>/` is a chapter, and `/fiction/<piece>/` is a standalone piece. Poems keep their line breaks. Set `draft: true` on a piece or a whole series to keep it off the site. The notice under each piece comes from `fiction_notice` in `site.json`. When both sections are live, the home page headline comes from `title_both` and `intro_both` in `content/home.md`. The two cards then list the latest three items of each section (change the number with `home_card_items` in `site.json`). On a computer, hovering or tabbing to a card widens it and shifts the page accent towards that section; on a phone both cards stay open. This is plain CSS, so the site still runs no scripts.
 
 ## Add an article
 

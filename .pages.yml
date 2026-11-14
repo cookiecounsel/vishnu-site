@@ -50,3 +50,92 @@ content:
     fields:
       - { name: title, label: Title, type: string }
       - { name: body, label: Text, type: rich-text }
+  - name: series
+    label: Fiction series
+    type: collection
+    path: content/series
+    filename: "{primary}.md"
+    view:
+      fields: [title, status, draft]
+      primary: title
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: summary
+        label: Summary (one or two sentences shown in lists)
+        type: text
+      - name: status
+        label: Status
+        type: select
+        options:
+          values: [Ongoing, Complete, On hold]
+      - name: description
+        label: Search description (optional, up to about 155 characters)
+        type: text
+      - name: draft
+        label: Draft (hidden from the website)
+        type: boolean
+        default: false
+      - name: body
+        label: Synopsis
+        type: rich-text
+  - name: pieces
+    label: Fiction pieces (chapters, stories, poems)
+    type: collection
+    path: content/pieces
+    filename: "{primary}.md"
+    view:
+      fields: [title, form, series, order, date, draft]
+      primary: title
+      sort: [date]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: form
+        label: Form
+        type: select
+        options:
+          values: [chapter, story, poem]
+      - name: series
+        label: Series (leave empty for a standalone story or poem)
+        type: reference
+        options:
+          collection: series
+      - name: order
+        label: Chapter number (for chapters only)
+        type: number
+      - name: date
+        label: Date
+        type: date
+      - name: summary
+        label: Summary (one or two sentences shown in lists)
+        type: text
+      - name: description
+        label: Search description (optional, up to about 155 characters)
+        type: text
+      - name: updated
+        label: Last updated (optional)
+        type: date
+      - name: draft
+        label: Draft (hidden from the website)
+        type: boolean
+        default: false
+      - name: body
+        label: Text
+        type: rich-text
+  - name: fiction-page
+    label: Fiction page
+    type: file
+    path: content/fiction.md
+    fields:
+      - { name: kicker, label: Small label above the title, type: string }
+      - { name: title, label: Title, type: string }
+      - { name: intro, label: Introduction, type: text }
+      - { name: card, label: Line shown on the home page card, type: text }
