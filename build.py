@@ -39,6 +39,7 @@ if MODE in ("law", "fiction"):
     SITE.update(json.loads((ROOT / f"site-{MODE}.json").read_text(encoding="utf-8")))
 FICTION_URL = SITE.get("fiction_url", "").rstrip("/")   # address of the fiction site
 LAW_URL = SITE.get("law_url", "").rstrip("/")           # address of the law site
+HOME_URL = SITE.get("home_url", "")                     # the logo on the law and fiction sites links here
 BASE = SITE.get("base_path", "").rstrip("/")   # e.g. "/repo-name" for a GitHub project site
 URL = SITE.get("site_url", "").rstrip("/")     # e.g. "https://example.com"
 SITE.setdefault("description", "")
@@ -454,7 +455,7 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False,
         head.append(f'<script type="application/ld+json">{blob}</script>')
     header = (
         '<header class="wrap masthead">'
-        f'<a class="brand" href="{href("/")}"><img class="brand-mark" src="{href("/logo.svg")}" alt="" width="34" height="34"><span>{esc(name)}</span></a>'
+        f'<a class="brand" href="{esc(HOME_URL) if (HOME_URL and MODE != "hub") else href("/")}"><img class="brand-mark" src="{href("/logo.svg")}" alt="" width="34" height="34"><span>{esc(name)}</span></a>'
         + nav_links(current, "nav")
         + "</header>"
     )
