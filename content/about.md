@@ -3,7 +3,7 @@ title: A lawyer who reads regulations against running software.
 ---
 I am a lawyer based in Kozhikode, Kerala, working in privacy law and commercial contracts. I hold a law degree and diplomas in international privacy laws, and have spent about four years as a legal analyst, with a major focus on privacy law.
 
-I write about the part of the work I know best: how privacy regulation meets software, and how contracts carry its obligations. I start from what a system does, then map it to what each law requires.
+I write about law as it is practised. Most of it is the part of the work I know best, how privacy regulation meets software and how contracts carry its obligations, and some of it ranges wider, into dispute resolution, corporate and business law. I start from what a system or a deal actually does, then map it to what each law requires.
 
 ## What I work on
 
@@ -19,4 +19,4 @@ I treat risk as a calibrated judgement, not a checklist. Where the law is settle
 
 ## What you will find here
 
-Articles on consent, data processing agreements and cross-border data rules, written from the practitioner's side. Each states its date and is revised when the law or my view changes. They are general information, not legal advice.
+Articles on privacy and consent, contracts and dispute resolution, and business law, written from the practitioner's side. Each states the date it was written and is revised when the law or my view changes, so the older pieces, from 2022, describe the law as it stood then. They are general information, not legal advice.
