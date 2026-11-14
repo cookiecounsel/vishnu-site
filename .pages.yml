@@ -131,6 +131,10 @@ content:
       - name: updated
         label: Last updated (optional)
         type: date
+      - name: ai_assisted
+        label: Show a note that AI was used to refine this text
+        type: boolean
+        default: false
       - name: draft
         label: Draft (hidden from the website)
         type: boolean
