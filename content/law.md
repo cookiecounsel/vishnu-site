@@ -1,6 +1,6 @@
 ---
 kicker: Law
-title: Privacy and contracts, where the rules meet the code.
-intro: Articles on consent, data processing agreements and the cross-border rules that follow a product around the world.
-card: Articles on consent, data processing agreements and cross-border data rules.
+title: Law, read against how things actually work.
+intro: Articles on privacy, contracts, business and whatever else the work turns up.
+card: Writing on law, from the practitioner's side.
 ---
