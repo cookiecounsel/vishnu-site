@@ -25,7 +25,7 @@ Note: GitHub Pages ignores `static/_headers`, so the strict security headers onl
 site.json                 name, tagline, contact details, navigation, credentials
 content/home.md           home page headline and intro
 content/law.md            Law page headline and intro
-content/about.md          About page text (law site, at /law/about/)
+content/about.md          About page text (law site)
 content/fiction-about.md  About page text (fiction site, at /about/)
 content/articles/*.md     one file per article
 content/fiction.md        Fiction site headline, intro and home page card line
@@ -35,10 +35,10 @@ static/style.css          all styling
 static/media/             images uploaded from the editor
 static/fonts/             optional self-hosted fonts (see below)
 static/_headers           security headers (Cloudflare Pages and Netlify)
-site-fiction.json         settings for the separate fiction site
-wrangler-fiction.jsonc    Cloudflare settings for the fiction site
+site-law.json, site-fiction.json  settings for the law and fiction sites
+wrangler-law.jsonc, wrangler-fiction.jsonc  Cloudflare settings for the law and fiction sites
 build.py                  the build script (builds either site)
-dist/, dist-fiction/      the finished sites, rebuilt every time you run build.py
+dist/, dist-law/, dist-fiction/  the finished sites, rebuilt every time you run build.py
 ```
 
 ## Build and preview
@@ -50,50 +50,35 @@ python3 -m http.server 8000 -d dist
 
 Then open http://localhost:8000. Python 3.8 or newer is the only requirement.
 
-## Fiction (a separate site from the same repository)
+## Three sites from one repository
 
-Fiction is its own website, at https://fiction.vishnuprasadv.com, built from this same repository. Law and About stay on https://vishnuprasadv.com. One repository means one editor and one build script: saving a piece in the editor rebuilds both sites.
+| Address | Build command | Output | What it holds |
+|---|---|---|---|
+| vishnuprasadv.com | `python3 build.py` | `dist/` | Home page with the Law and Fiction cards. Redirects old addresses to the law site. |
+| law.vishnuprasadv.com | `python3 build.py --site law` | `dist-law/` | Articles and the Law About page |
+| fiction.vishnuprasadv.com | `python3 build.py --site fiction` | `dist-fiction/` | Series, chapters, stories, poems and the Fiction About page |
 
-A **series** (`content/series/`) is a novel or serial: title, summary, status and a synopsis. A **piece** (`content/pieces/`) is one text. A chapter is a piece with a Series and a chapter number. A short story or poem is a piece with no Series. In the editor these are "Fiction series" and "Fiction pieces".
+One repository means one editor (Pages CMS) and one build script. Saving anything in the editor rebuilds all three sites.
 
-```
----
-title: The First Gate
-form: chapter          # chapter, story or poem
-series: The Test Saga  # leave out for a standalone piece
-order: 1               # chapter number, used to sort and to link previous and next
-date: 2026-12-01
-summary: One or two sentences shown in the lists.
----
-Text of the chapter. A line containing only --- is shown as a scene break.
-```
+- `site.json` holds shared settings and the home page. `site-law.json` and `site-fiction.json` override it for their site (name, description, address, menu). `law_url` and `fiction_url` in `site.json` are where the cards and menus link.
+- The Fiction card and menu links appear only once at least one piece is published.
+- The home page shows the latest three items of each section (`home_card_items` in `site.json`) as interactive cards. On a computer, hovering or tabbing to a card widens it and dims the other; on a phone they stack. This is plain CSS, so no site runs scripts.
+- Addresses on the law site: `/` lists articles, `/<article>/` is an article, `/about/` is the About page. On the fiction site: `/` lists everything, `/<series>/`, `/<series>/<chapter>/`, `/<piece>/`, `/about/`.
+- The old addresses vishnuprasadv.com/law/... and /about/ redirect permanently to the law site.
 
-Addresses on the fiction site: `/` lists everything, `/<series>/` is a series page with its contents, `/<series>/<chapter>/` is a chapter, `/<piece>/` is a standalone piece. Poems keep their line breaks. Set `draft: true` on a piece or a whole series to keep it off the site.
+A **series** (`content/series/`) is a novel or serial. A **piece** (`content/pieces/`) is one text: a chapter has a Series and a chapter number, a story or poem has no Series. Set `draft: true` to keep anything off the site. Each piece's `date` is the date shown, so older writing keeps its real date.
 
-How the two sites connect:
+### Cloudflare setup (one-time)
 
-- `site.json` is the main site. Its `fiction_url` is the address of the fiction site. The Fiction menu entry and the second home page card appear only when at least one piece is published, and they link to the fiction site.
-- `site-fiction.json` holds the fiction site's name, tagline, description, address and menu. Anything it leaves out is taken from `site.json`.
-- The home page of the main site shows the latest articles (three by default, `home_articles` in `site.json`) as interactive cards. On a computer, hovering or tabbing to a card widens it and dims the others; on a phone the cards stack. This is plain CSS, so neither site runs scripts. Fiction is reached from the menu.
-- The notice under each piece comes from `fiction_notice` in `site.json`.
+The existing project (`vishnu-site`) keeps serving vishnuprasadv.com. Two more projects read the same repository. Do the law project first, then merge the pull request, so the redirects never point at a site that is not live.
 
-Build each site:
+1. Workers & Pages, Create, import the `vishnu-site` repository. Name it exactly `vishnu-law`. Build command `python3 build.py --site law`, deploy command `npx wrangler deploy --config wrangler-law.jsonc`.
+2. When that build succeeds, open the project's Settings, Domains and Routes, and add the custom domain `law.vishnuprasadv.com`.
+3. Repeat for fiction: name `vishnu-fiction`, build command `python3 build.py --site fiction`, deploy command `npx wrangler deploy --config wrangler-fiction.jsonc`, domain `fiction.vishnuprasadv.com`.
+4. Leave the existing `vishnu-site` project unchanged: build `python3 build.py`, deploy with the existing `wrangler.jsonc`.
+5. In each new project's build settings, if Cloudflare asks which paths trigger builds, leave it at the whole repository.
 
-```
-python3 build.py                  # main site into dist/
-python3 build.py --site fiction   # fiction site into dist-fiction/
-```
-
-### Publishing the fiction site on Cloudflare (one-time setup)
-
-The main site already has a Cloudflare project. The fiction site needs a second one that reads the same repository:
-
-1. In the Cloudflare dashboard, open Workers & Pages, choose Create, then import the same `vishnu-site` repository.
-2. Name the project exactly `vishnu-fiction`. It must match the `name` in `wrangler-fiction.jsonc`.
-3. Set the build command to `python3 build.py --site fiction` and the deploy command to `npx wrangler deploy --config wrangler-fiction.jsonc`. Leave the production branch as `main`.
-4. When the first build succeeds, open the project's Settings, then Domains and Routes, and add the custom domain `fiction.vishnuprasadv.com`. Cloudflare creates the DNS record itself because the domain is already on Cloudflare.
-
-If you want a different address later, change `site_url` in `site-fiction.json` and `fiction_url` in `site.json`, and add that domain to the project in step 4.
+To use other subdomain names, change `site_url` in the two override files and `law_url`, `fiction_url` in `site.json`, and attach those names in step 2 and 3.
 
 ## Add an article
 

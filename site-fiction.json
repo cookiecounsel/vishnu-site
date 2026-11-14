@@ -15,7 +15,11 @@
     },
     {
       "label": "Law",
-      "url": "https://vishnuprasadv.com/law/"
+      "url": "{law_url}"
+    },
+    {
+      "label": "Home",
+      "url": "https://vishnuprasadv.com/"
     }
   ]
 }

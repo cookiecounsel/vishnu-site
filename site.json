@@ -12,16 +12,12 @@
   "nav": [
     {
       "label": "Law",
-      "path": "/law/"
+      "url": "{law_url}"
     },
     {
       "label": "Fiction",
       "url": "{fiction_url}",
       "when": "fiction"
-    },
-    {
-      "label": "About",
-      "path": "/law/about/"
     }
   ],
   "credentials": [
@@ -51,5 +47,6 @@
     }
   ],
   "fiction_notice": "A work of fiction. © Vishnu Prasad V. All rights reserved.",
-  "fiction_url": "https://fiction.vishnuprasadv.com"
+  "fiction_url": "https://fiction.vishnuprasadv.com",
+  "law_url": "https://law.vishnuprasadv.com"
 }
