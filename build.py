@@ -477,10 +477,17 @@ def entry_html(a):
 
 # ---------------------------------------------------------------- pages
 
-def home_card(cls, label, path, text, latest_title):
-    latest = f'<p class="card-latest"><span>Latest</span> {esc(latest_title)}</p>' if latest_title else ""
-    return (f'<a class="card {cls}" href="{href(path)}"><p class="eyebrow">{esc(label)}</p>'
-            f'<h2>{esc(label)}</h2><p class="card-text">{esc(text)}</p>{latest}</a>')
+def card_items(rows):
+    li = "".join(
+        f'<li><a href="{href(url)}"><span class="ci-title">{esc(title)}</span>'
+        f'<span class="ci-meta">{esc(meta)}</span></a></li>' for url, title, meta in rows)
+    return f'<div class="card-list"><p class="label">Latest</p><ul>{li}</ul></div>'
+
+
+def home_card(cls, label, path, text, rows):
+    return (f'<div class="card {cls}"><h2><a class="card-link" href="{href(path)}">{esc(label)}'
+            '<span class="arrow" aria-hidden="true">&rarr;</span></a></h2>'
+            f'<p class="card-text">{esc(text)}</p>{card_items(rows)}</div>')
 
 
 def page_home(articles, pieces=()):
@@ -499,14 +506,23 @@ def page_home(articles, pieces=()):
     if both:
         lm, _ = parse(CONTENT / "law.md")
         fm, _ = parse(CONTENT / "fiction.md")
-        dated = [c for c in pieces if c["date"]]
-        newest = max(dated, key=lambda c: c["date"]) if dated else pieces[0]
+        count = int(SITE.get("home_card_items", 3))
+        law_rows = [(f"/law/{a['slug']}/", a["title"],
+                     " · ".join(x for x in (fmt_date(a["date"]) if a["date"] else "", a["topic"]) if x))
+                    for a in articles[:count]]
+        newest = sorted(pieces, key=lambda c: -(c["date"].toordinal() if c["date"] else 0))[:count]
+
+        def where(c):
+            if c["series"]:
+                return f"{c['series']['title']}, chapter {c['series']['pieces'].index(c) + 1}"
+            return FORM_LABEL[c["form"]]
+        fic_rows = [(c["url"], c["title"],
+                     " · ".join(x for x in (fmt_date(c["date"]) if c["date"] else "", where(c)) if x))
+                    for c in newest]
         cards = (
             '<section class="wrap"><div class="cards">'
-            + home_card("card-law", "Law", "/law/", lm.get("card") or lm.get("intro", ""),
-                        articles[0]["title"] if articles else "")
-            + home_card("card-fiction", "Fiction", "/fiction/", fm.get("card") or fm.get("intro", ""),
-                        newest["title"])
+            + home_card("card-law", "Law", "/law/", lm.get("card") or lm.get("intro", ""), law_rows)
+            + home_card("card-fiction", "Fiction", "/fiction/", fm.get("card") or fm.get("intro", ""), fic_rows)
             + "</div></section></main>"
         )
         body = hero + cards

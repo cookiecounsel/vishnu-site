@@ -65,7 +65,7 @@ summary: One or two sentences shown in the lists.
 Text of the chapter. A line containing only --- is shown as a scene break.
 ```
 
-Addresses: `/fiction/` lists everything, `/fiction/<series>/` is the series page with its contents, `/fiction/<series>/<chapter>/` is a chapter, and `/fiction/<piece>/` is a standalone piece. Poems keep their line breaks. Set `draft: true` on a piece or a whole series to keep it off the site. The notice under each piece comes from `fiction_notice` in `site.json`. When both sections are live, the home page headline comes from `title_both` and `intro_both` in `content/home.md`.
+Addresses: `/fiction/` lists everything, `/fiction/<series>/` is the series page with its contents, `/fiction/<series>/<chapter>/` is a chapter, and `/fiction/<piece>/` is a standalone piece. Poems keep their line breaks. Set `draft: true` on a piece or a whole series to keep it off the site. The notice under each piece comes from `fiction_notice` in `site.json`. When both sections are live, the home page headline comes from `title_both` and `intro_both` in `content/home.md`. The two cards then list the latest three items of each section (change the number with `home_card_items` in `site.json`). On a computer, hovering or tabbing to a card widens it and shifts the page accent towards that section; on a phone both cards stay open. This is plain CSS, so the site still runs no scripts.
 
 ## Add an article
 
