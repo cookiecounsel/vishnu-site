@@ -302,6 +302,9 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False,
         f'<meta property="og:type" content="{kind}">',
         f'<meta property="og:site_name" content="{esc(name)}">',
         '<meta name="twitter:card" content="summary">',
+        f'<link rel="icon" href="{href("/favicon.svg")}" type="image/svg+xml">',
+        f'<link rel="icon" href="{href("/favicon.ico")}" sizes="48x48">',
+        f'<link rel="apple-touch-icon" href="{href("/apple-touch-icon.png")}">',
         f'<link rel="stylesheet" href="{href("/style.css")}">',
     ]
     if noindex:
@@ -317,7 +320,7 @@ def layout(title, desc, body, path, current=None, kind="website", noindex=False,
         head.append(f'<script type="application/ld+json">{blob}</script>')
     header = (
         '<header class="wrap masthead">'
-        f'<a class="brand" href="{href("/")}">{esc(name)}</a>'
+        f'<a class="brand" href="{href("/")}"><img class="brand-mark" src="{href("/logo.svg")}" alt="" width="34" height="34"><span>{esc(name)}</span></a>'
         + nav_links(current, "nav")
         + "</header>"
     )
