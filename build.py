@@ -626,12 +626,31 @@ def page_article(a, articles):
 
 
 def poem_html(src):
-    stanzas = re.split(r"\n\s*\n", src.strip())
-    out = []
-    for st in stanzas:
-        lines = [re.sub(r"(\\| {2,})$", "", ln.rstrip()).strip() for ln in st.splitlines()]
-        out.append("<p>" + "<br>\n".join(inline(ln) for ln in lines if ln) + "</p>")
-    return "\n".join(out)
+    """Turns a poem's text into stanzas of lines.
+
+    The editor puts a blank line after every line you type, so a poem written there looks like one
+    line per paragraph. When no two lines of text touch, a single blank line is therefore a line
+    break, and an empty paragraph (a line holding only spaces) or two or more blank lines is a
+    stanza break. When some lines do touch, as in a plain text file, a blank line is a stanza break
+    and a plain new line is a line break.
+    """
+    lines = src.strip().splitlines()
+    kinds = ["text" if ln.strip() else ("spaces" if ln else "blank") for ln in lines]
+    touching = any(a == "text" and b == "text" for a, b in zip(kinds, kinds[1:]))
+    stanzas, cur, gap, spaced = [], [], 0, False
+    for ln, kind in zip(lines, kinds):
+        if kind != "text":
+            gap += 1
+            spaced = spaced or kind == "spaces"
+            continue
+        if cur and gap and (touching or gap >= 2 or spaced):
+            stanzas.append(cur)
+            cur = []
+        cur.append(re.sub(r"(\\| {2,})$", "", ln.rstrip()).strip())
+        gap, spaced = 0, False
+    if cur:
+        stanzas.append(cur)
+    return "\n".join("<p>" + "<br>\n".join(inline(x) for x in st) + "</p>" for st in stanzas)
 
 
 def fiction_entry(url, meta_parts, title, blurb):

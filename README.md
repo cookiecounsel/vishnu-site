@@ -66,7 +66,7 @@ One repository means one editor (Pages CMS) and one build script. Saving anythin
 - Addresses on the law site: `/` lists articles, `/<article>/` is an article, `/about/` is the About page. On the fiction site: `/` lists everything, `/<series>/`, `/<series>/<chapter>/`, `/<piece>/`, `/about/`.
 - The old addresses vishnuprasadv.com/law/... and /about/ redirect permanently to the law site.
 
-A **series** (`content/series/`) is a novel or serial. A **piece** (`content/pieces/`) is one text: a chapter has a Series and a chapter number, a story or poem has no Series. Set `draft: true` to keep anything off the site. Each piece's `date` is the date shown, so older writing keeps its real date.
+A **series** (`content/series/`) is a novel or serial. A **piece** (`content/pieces/`) is one text: a chapter has a Series and a chapter number, a story or poem has no Series. Set `draft: true` to keep anything off the site. **Poems:** in the editor, press Enter at the end of each line and leave one empty line (press Enter again) between stanzas; the site shows each stanza as a block of tight lines with a gap before the next. Each piece's `date` is the date shown, so older writing keeps its real date.
 
 ### Cloudflare setup (one-time)
 
