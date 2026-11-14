@@ -3,7 +3,7 @@ title: The Flat
 form: chapter
 series: The Hollow Room
 order: 5
-date: 2026-11-14
+date: 2025-08-21
 ai_assisted: true
 draft: false
 ---
